@@ -11,6 +11,7 @@ namespace BusReservation.Models
         public string Pname { get; set; }
         public int? Page { get; set; }
         public int? BookingId { get; set; }
+        public int? SeatNo { get; set; }
 
         public virtual Booking Booking { get; set; }
     }

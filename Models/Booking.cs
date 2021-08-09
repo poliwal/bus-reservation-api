@@ -9,7 +9,6 @@ namespace BusReservation.Models
     {
         public Booking()
         {
-            BookedSeats = new HashSet<BookedSeat>();
             PassengerDetails = new HashSet<PassengerDetail>();
         }
 
@@ -28,7 +27,6 @@ namespace BusReservation.Models
 
         public virtual bus Bus { get; set; }
         public virtual Customer CidNavigation { get; set; }
-        public virtual ICollection<BookedSeat> BookedSeats { get; set; }
         public virtual ICollection<PassengerDetail> PassengerDetails { get; set; }
     }
 }

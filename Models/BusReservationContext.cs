@@ -18,7 +18,6 @@ namespace BusReservation.Models
         }
 
         public virtual DbSet<Admin> Admins { get; set; }
-        public virtual DbSet<BookedSeat> BookedSeats { get; set; }
         public virtual DbSet<Booking> Bookings { get; set; }
         public virtual DbSet<BusSeatNo> BusSeatNos { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
@@ -46,20 +45,6 @@ namespace BusReservation.Models
                 entity.Property(e => e.AdminId).HasMaxLength(20);
 
                 entity.Property(e => e.AdminPass).HasMaxLength(20);
-            });
-
-            modelBuilder.Entity<BookedSeat>(entity =>
-            {
-                entity.HasOne(d => d.Booking)
-                    .WithMany(p => p.BookedSeats)
-                    .HasForeignKey(d => d.BookingId)
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("fk_Bo_Bs_BID");
-
-                entity.HasOne(d => d.Seat)
-                    .WithMany(p => p.BookedSeats)
-                    .HasForeignKey(d => d.SeatId)
-                    .HasConstraintName("fk_Bks_Bs_BID");
             });
 
             modelBuilder.Entity<Booking>(entity =>
@@ -142,7 +127,7 @@ namespace BusReservation.Models
             modelBuilder.Entity<PassengerDetail>(entity =>
             {
                 entity.HasKey(e => e.PassId)
-                    .HasName("PK__Passenge__C6740AA89CD8DD29");
+                    .HasName("PK__Passenge__C6740AA8588D0B4F");
 
                 entity.Property(e => e.Page).HasColumnName("PAge");
 
