@@ -20,7 +20,6 @@ namespace BusReservation.Controllers
             _context = context;
         }
 
-
         // GET: api/buses
         [HttpGet]
         public async Task<ActionResult<IEnumerable<bus>>> GetBuses()
@@ -47,7 +46,7 @@ namespace BusReservation.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Putbus(int id, bus bus)
         {
-            if (id != bus.BusId)
+            if (id != bus.BusNo)
             {
                 return BadRequest();
             }
@@ -81,7 +80,7 @@ namespace BusReservation.Controllers
             _context.Buses.Add(bus);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("Getbus", new { id = bus.BusId }, bus);
+            return CreatedAtAction("Getbus", new { id = bus.BusNo }, bus);
         }
 
         // DELETE: api/buses/5
@@ -102,7 +101,7 @@ namespace BusReservation.Controllers
 
         private bool busExists(int id)
         {
-            return _context.Buses.Any(e => e.BusId == id);
+            return _context.Buses.Any(e => e.BusNo == id);
         }
     }
 }

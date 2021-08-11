@@ -10,11 +10,13 @@ namespace BusReservation.Models
         public Booking()
         {
             PassengerDetails = new HashSet<PassengerDetail>();
+            ReturnBookings = new HashSet<ReturnBooking>();
         }
 
         public int BookingId { get; set; }
         public int? Cid { get; set; }
-        public int? BusId { get; set; }
+        public int? BusScId { get; set; }
+        public int? ReturnBusId { get; set; }
         public int? NoOfPassengers { get; set; }
         public decimal? TotalFare { get; set; }
         public string Status { get; set; }
@@ -25,8 +27,9 @@ namespace BusReservation.Models
         public bool? WithDriver { get; set; }
         public decimal? SecurityDeposit { get; set; }
 
-        public virtual bus Bus { get; set; }
+        public virtual BusSchedule BusSc { get; set; }
         public virtual Customer CidNavigation { get; set; }
         public virtual ICollection<PassengerDetail> PassengerDetails { get; set; }
+        public virtual ICollection<ReturnBooking> ReturnBookings { get; set; }
     }
 }

@@ -19,10 +19,11 @@ namespace BusReservation.Models
 
         public virtual DbSet<Admin> Admins { get; set; }
         public virtual DbSet<Booking> Bookings { get; set; }
+        public virtual DbSet<BusSchedule> BusSchedules { get; set; }
         public virtual DbSet<BusSeatNo> BusSeatNos { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
         public virtual DbSet<PassengerDetail> PassengerDetails { get; set; }
-        public virtual DbSet<Schedule> Schedules { get; set; }
+        public virtual DbSet<ReturnBooking> ReturnBookings { get; set; }
         public virtual DbSet<bus> Buses { get; set; }
 
         /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -61,29 +62,43 @@ namespace BusReservation.Models
 
                 entity.Property(e => e.TotalFare).HasColumnType("decimal(10, 2)");
 
-                entity.HasOne(d => d.Bus)
+                entity.HasOne(d => d.BusSc)
                     .WithMany(p => p.Bookings)
-                    .HasForeignKey(d => d.BusId)
+                    .HasForeignKey(d => d.BusScId)
                     .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("fk_B_B_BID");
+                    .HasConstraintName("fk_B_BS_BSId");
 
                 entity.HasOne(d => d.CidNavigation)
                     .WithMany(p => p.Bookings)
                     .HasForeignKey(d => d.Cid)
                     .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("fk_C_B_CID");
+                    .HasConstraintName("fk_B_C_CID");
+            });
+
+            modelBuilder.Entity<BusSchedule>(entity =>
+            {
+                entity.HasKey(e => e.BusScId)
+                    .HasName("PK__BusSched__D183A887C7A7EA5D");
+
+                entity.Property(e => e.DepartureDate).HasColumnType("date");
+
+                entity.HasOne(d => d.BusNoNavigation)
+                    .WithMany(p => p.BusSchedules)
+                    .HasForeignKey(d => d.BusNo)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("fk_BS_B_BNo");
             });
 
             modelBuilder.Entity<BusSeatNo>(entity =>
             {
                 entity.HasKey(e => e.SeatId)
-                    .HasName("PK__BusSeatN__311713F3361D722E");
+                    .HasName("PK__BusSeatN__311713F35ECDC281");
 
                 entity.ToTable("BusSeatNo");
 
-                entity.HasOne(d => d.Bus)
+                entity.HasOne(d => d.BusSc)
                     .WithMany(p => p.BusSeatNos)
-                    .HasForeignKey(d => d.BusId)
+                    .HasForeignKey(d => d.BusScId)
                     .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("fk_B_Bs_BID");
             });
@@ -127,7 +142,7 @@ namespace BusReservation.Models
             modelBuilder.Entity<PassengerDetail>(entity =>
             {
                 entity.HasKey(e => e.PassId)
-                    .HasName("PK__Passenge__C6740AA8588D0B4F");
+                    .HasName("PK__Passenge__C6740AA8E3AC3AFE");
 
                 entity.Property(e => e.Page).HasColumnName("PAge");
 
@@ -142,22 +157,25 @@ namespace BusReservation.Models
                     .HasConstraintName("fk_Bo_PD_BID");
             });
 
-            modelBuilder.Entity<Schedule>(entity =>
+            modelBuilder.Entity<ReturnBooking>(entity =>
             {
-                entity.HasKey(e => e.ScId)
-                    .HasName("PK__Schedule__ACB791DA2DEA73AF");
-
-                entity.Property(e => e.ScDate).HasColumnType("date");
-
-                entity.HasOne(d => d.Bus)
-                    .WithMany(p => p.Schedules)
-                    .HasForeignKey(d => d.BusId)
+                entity.HasOne(d => d.Booking)
+                    .WithMany(p => p.ReturnBookings)
+                    .HasForeignKey(d => d.BookingId)
                     .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("fk_S_B_BID");
+                    .HasConstraintName("fk_Bo_RB_BID");
+
+                entity.HasOne(d => d.BusSc)
+                    .WithMany(p => p.ReturnBookings)
+                    .HasForeignKey(d => d.BusScId)
+                    .HasConstraintName("fk_B_RB_BID");
             });
 
             modelBuilder.Entity<bus>(entity =>
             {
+                entity.HasKey(e => e.BusNo)
+                    .HasName("PK__Buses__6A0F3A4122BF8183");
+
                 entity.Property(e => e.BusName).HasMaxLength(30);
 
                 entity.Property(e => e.Destination).HasMaxLength(30);

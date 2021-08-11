@@ -22,23 +22,25 @@ namespace BusReservation.Controllers
 
         // GET: api/BusSeatNoes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BusSeatNo>>> GetBusSeatNos()
+        public IActionResult GetBusSeatNos()
         {
-            return await _context.BusSeatNos.ToListAsync();
+            return Ok((from seat in _context.BusSeatNos
+                       orderby seat.SeatNo
+                       select seat).ToList());
         }
 
         // GET: api/BusSeatNoes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<BusSeatNo>> GetBusSeatNo(int id)
+        public IActionResult GetBusSeatNo(int id)
         {
-            var busSeatNo = await _context.BusSeatNos.FindAsync(id);
+            var busSeatNo = _context.BusSeatNos.Where(b => b.BusScId == id).OrderBy(b => b.SeatNo).ToList();
 
             if (busSeatNo == null)
             {
                 return NotFound();
             }
 
-            return busSeatNo;
+            return Ok(busSeatNo);
         }
 
         // PUT: api/BusSeatNoes/5
@@ -75,12 +77,16 @@ namespace BusReservation.Controllers
         // POST: api/BusSeatNoes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<BusSeatNo>> PostBusSeatNo(BusSeatNo busSeatNo)
+        public IActionResult PostBusSeatNo(List<BusSeatNo> busSeatNo)
         {
-            _context.BusSeatNos.Add(busSeatNo);
-            await _context.SaveChangesAsync();
+            foreach (var item in busSeatNo)
+            {
+                _context.BusSeatNos.Add(item);
+            }
 
-            return CreatedAtAction("GetBusSeatNo", new { id = busSeatNo.SeatId }, busSeatNo);
+            _context.SaveChangesAsync();
+
+            return Ok("Added Seats)");
         }
 
         // DELETE: api/BusSeatNoes/5

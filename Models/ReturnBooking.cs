@@ -5,13 +5,13 @@ using System.Collections.Generic;
 
 namespace BusReservation.Models
 {
-    public partial class BusSeatNo
+    public partial class ReturnBooking
     {
-        public int SeatId { get; set; }
+        public int ReturnBookingId { get; set; }
+        public int? BookingId { get; set; }
         public int? BusScId { get; set; }
-        public int? SeatNo { get; set; }
-        public bool? IsAvailable { get; set; }
 
+        public virtual Booking Booking { get; set; }
         public virtual BusSchedule BusSc { get; set; }
     }
 }
