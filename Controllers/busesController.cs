@@ -41,6 +41,27 @@ namespace BusReservation.Controllers
             return bus;
         }
 
+        [HttpPut]
+        [Route("reduceSeats")]
+        public IActionResult ReduceSeats([FromQuery(Name = "busNo")] int BusNo,[FromQuery(Name = "num")] int Num)
+        {
+ 
+            var bus = _context.Buses.Where(b => b.BusNo == BusNo).FirstOrDefault();
+
+            bus.NoOfSeats = bus.NoOfSeats - Num;
+
+            /*_context.Buses.Update(bus);*/
+
+            _context.SaveChanges();
+
+            if (bus == null)
+            {
+                return NotFound();
+            }
+
+            return Ok("Updated Seats");
+        }
+
         // PUT: api/buses/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
