@@ -41,6 +41,30 @@ namespace BusReservation.Controllers
             return booking;
         }
 
+        [HttpGet]
+        [Route("bookingForCid")]
+        public IActionResult GetBookingForCid(int id)
+        {
+            var bookings = (from b in _context.Bookings
+                            join bsc in _context.BusSchedules on b.BusScId equals bsc.BusScId
+                            join bs in _context.Buses on bsc.BusNo equals bs.BusNo
+                            where b.Cid == id
+                            select new
+                            {
+                                b.BookingId,b.Cid,b.BusScId,b.ReturnBusId,b.NoOfPassengers,b.TotalFare,b.Status,b.DateOfBooking,
+                                b.IsReturn,b.ReturnDate,b.WholeBus,b.WithDriver,b.SecurityDeposit,bsc.DepartureDate,
+                                bs.BusNo,bs.BusName,bs.Source,bs.Destination,bs.DepartureTime,bs.ArrivalTime,bs.NoOfSeats,bs.Via,
+                                bs.Fare,bs.DriverName,bs.DriverAge,bs.DriverExperience
+                            }).ToList();
+
+            if (bookings == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(bookings);
+        }
+
         // PUT: api/Bookings/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]

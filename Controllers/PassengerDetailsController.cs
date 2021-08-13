@@ -108,5 +108,48 @@ namespace BusReservation.Controllers
         {
             return _context.PassengerDetails.Any(e => e.PassId == id);
         }
+
+
+
+        //get passenger by booking id
+
+        [HttpGet]
+        [Route("getPassenger")]
+        public IActionResult GetPassenger([FromQuery(Name = "bookingid")] int bookingid)
+        {
+            dynamic passenger = (from p in _context.PassengerDetails
+                                 where p.BookingId == bookingid
+                                 select p).ToList();
+
+            return Ok(passenger);
+        }
+
+        //get passengerseatno by bookingid
+
+        [HttpGet]
+        [Route("getPassengerSeatNo")]
+        public IActionResult GetPassengerSeatNo([FromQuery(Name = "bookingid")] int bookingid)
+        {
+            dynamic seatno = (from p in _context.PassengerDetails
+                              where p.BookingId == bookingid
+                              select p.SeatNo).ToList();
+
+            return Ok(seatno);
+        }
+
+
+
+        //get passenger return seat no
+
+
+        [HttpGet]
+        [Route("getPassengerReturnSeatNo")]
+        public IActionResult GetPassengerReturnSeatNo([FromQuery(Name = "bookingid")] int bookingid)
+        {
+            dynamic returnSeatNo = (from p in _context.PassengerDetails
+                                    where p.BookingId == bookingid
+                                    select p.ReturnSeatNo).ToList();
+            return Ok(returnSeatNo);
+        }
     }
 }
