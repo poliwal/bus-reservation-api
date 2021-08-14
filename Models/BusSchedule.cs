@@ -17,6 +17,7 @@ namespace BusReservation.Models
         public int BusScId { get; set; }
         public DateTime? DepartureDate { get; set; }
         public int? BusNo { get; set; }
+        public int? AvailableSeats { get; set; }
 
         public virtual bus BusNoNavigation { get; set; }
         public virtual ICollection<Booking> Bookings { get; set; }

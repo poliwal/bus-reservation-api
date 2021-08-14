@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusReservation.Models;
+using System.Net.Mail;
+using System.Net;
 
 namespace BusReservation.Controllers
 {
@@ -20,80 +22,256 @@ namespace BusReservation.Controllers
             _context = context;
         }
 
+        #region Get all Customers
         // GET: api/Customers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
         {
-            return await _context.Customers.ToListAsync();
+            try
+            {
+                return await _context.Customers.ToListAsync();
+            }
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
         }
+        #endregion
 
+
+        #region Get Customer by Cid
         // GET: api/Customers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Customer>> GetCustomer(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
-
-            if (customer == null)
+            try
             {
-                return NotFound();
+                var customer = await _context.Customers.FindAsync(id);
+
+                if (customer == null)
+                {
+                    return NotFound();
+                }
+
+                return customer;
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+            
+        }
+        #endregion
+
+        #region Get CustomerId for a email
+        // GET: api/Customers/5
+        [HttpGet]
+        [Route("getCidByEmail")]
+        public IActionResult GetCustomerIdForEmail(string Email)
+        {
+            try
+            {
+                var customer = _context.Customers.Where(c => c.Email == Email).Select(c => c.Cid).FirstOrDefault();
+
+                if (customer == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(customer);
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
             }
 
-            return customer;
         }
+        #endregion
 
+        #region Deduct Fare on Booking
         [HttpPut]
         [Route("deductFare")]
         public IActionResult DeductFare([FromQuery(Name = "cid")] int Cid, [FromQuery(Name = "fare")] decimal Fare)
         {
-            var cust = _context.Customers.Where(c=>c.Cid == Cid).FirstOrDefault();
+            try
+            {
+                var cust = _context.Customers.Where(c => c.Cid == Cid).FirstOrDefault();
 
-            cust.Wallet = cust.Wallet - Fare;
+                cust.Wallet = cust.Wallet - Fare;
 
-            _context.SaveChanges();
+                _context.SaveChanges();
 
-            return Ok("Deducted");
+                return Ok("Deducted");
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Forgot Password SMTP
+        [HttpGet]
+        [Route("forgotPassword")]
+        public IActionResult ForgotPassword([FromQuery(Name = "email")] string Email)
+        {
+            var cust = _context.Customers.Where(c => c.Email == Email).FirstOrDefault();
+            if (cust == null)
+            {
+                return BadRequest("invalid email");
+            }
+
+            using SmtpClient email = new SmtpClient
+            {
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                EnableSsl = true,
+                Host = "smtp.gmail.com",
+                Port = 587,
+                Credentials = new NetworkCredential("jesselannister3@gmail.com", ""),
+            };
+
+            string subject = "Reset your Password";
+
+            string body = "Reset Password Link :  http://localhost:4200/reset-password ";
+            try
+            {
+                email.Send("jesselannister3@gmail.com", Email, subject, body);
+                return Ok("Email sent");
+            }
+            catch (Exception e)
+            {
+                return BadRequest("Email not sent");
+            }
+        }
+        #endregion
+
+        #region Change Password
         [HttpPut]
         [Route("change-password")]
         public IActionResult ChangePassword([FromQuery(Name = "cid")] long Cid, [FromQuery(Name = "cp")] string cp, [FromQuery(Name = "np")] string np, [FromQuery(Name = "cnp")] string cnp)
         {
-            var cust = _context.Customers.Where(a => a.Cid == Cid).FirstOrDefault();
-            if (cust.Password != cp) return BadRequest("wrong Current Password.");
-
-            if (np != cnp)
+            try
             {
-                return BadRequest("New passwords didn't matched.");
+                var cust = _context.Customers.Where(a => a.Cid == Cid).FirstOrDefault();
+                if (cust.Password != cp) return BadRequest("wrong Current Password.");
+
+                if (np != cnp)
+                {
+                    return BadRequest("New passwords didn't matched.");
+                }
+
+                // update details if same
+                cust.Password = cnp;
+
+                _context.SaveChanges();
+                return Ok("Password changed successfully.");
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+            
+        }
+        #endregion
+
+        #region Reset Password
+        [HttpPut]
+        [Route("reset-password")]
+        public IActionResult ResetPassword([FromQuery(Name = "cid")] int Cid, [FromQuery(Name = "np")] string np, [FromQuery(Name = "cnp")] string cnp)
+        {
+            try
+            {
+                var cust = _context.Customers.Where(a => a.Cid == Cid).FirstOrDefault();
+
+                if (np != cnp)
+                {
+                    return BadRequest("New passwords didn't matched.");
+                }
+
+                // update details if same
+                cust.Password = cnp;
+
+                _context.SaveChanges();
+                return Ok("Password changed successfully.");
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
             }
 
-            // update details if same
-            cust.Password = cnp;
-
-            _context.SaveChanges();
-            return Ok("Password changed successfully.");
         }
+        #endregion
 
+
+        #region Registering Customer
         [HttpPost]
         [Route("register")]
         public IActionResult RegisterCustomer([FromQuery(Name = "cp")] string Cp, Customer customer)
         {
-            /*var cust = _context.Customers.Where(a => a.Cid == Cid).FirstOrDefault();*/
-            /*if (customer.Password != Cp) return BadRequest("wrong Current Password.");*/
-
-            if (customer.Password != Cp)
+            try
             {
-                return Ok("Both passwords didn't matched.");
+
+                var cust = _context.Customers.Where(a => a.Email == customer.Email && a.IsAuthorized == true).FirstOrDefault();
+                
+                /*if (customer.Password != Cp) return BadRequest("wrong Current Password.");*/
+                if (cust != null)
+                {
+                    return Ok("Email Already Exists.");
+                }
+                else
+                {
+                    var unauthCust = _context.Customers.Where(a => a.Email == customer.Email && a.IsAuthorized == false).FirstOrDefault();
+                    if(unauthCust != null)
+                    {
+                        if (customer.Password != Cp)
+                        {
+                            return Ok("Both passwords didn't matched.");
+                        }
+                        unauthCust.Fname = customer.Fname;
+                        unauthCust.Lname = customer.Lname;
+                        unauthCust.Password = customer.Password;
+                        unauthCust.ContactNo = customer.ContactNo;
+                        unauthCust.Wallet = customer.Wallet;
+                        unauthCust.IsAuthorized = customer.IsAuthorized;
+                        /*_context.Customers.Update(unauthCust);*/
+                        _context.SaveChanges();
+                        return Ok("Added Customer.");
+                    }
+                    else
+                    {
+                        if (customer.Password != Cp)
+                        {
+                            return Ok("Both passwords didn't matched.");
+                        }
+
+                        // update details if same
+                        _context.Customers.Add(customer);
+
+                        _context.SaveChanges();
+                        return Ok("Added Customer.");
+                    }
+                }
+
+                
             }
+            catch (Exception e)
+            {
 
-            // update details if same
-            _context.Customers.Add(customer);
-
-            _context.SaveChanges();
-            return Ok("Added Customer.");
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Update Customer
         // PUT: api/Customers/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCustomer(int id, Customer customer)
         {
@@ -122,43 +300,65 @@ namespace BusReservation.Controllers
 
             return Ok("Updated Profile");
         }
+        #endregion
 
+        #region Add Unauthorized Customer
         // POST: api/Customers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public IActionResult PostCustomer(Customer customer)
         {
-            var res = _context.Customers.Where(c => c.Email == customer.Email && c.ContactNo == customer.ContactNo).FirstOrDefault();
+            try
+            {
+                var res = _context.Customers.Where(c => c.Email == customer.Email && c.ContactNo == customer.ContactNo).FirstOrDefault();
 
-            if(res != null)
-            {
-                return Ok(res);
+                if (res != null)
+                {
+                    return Ok(res);
+                }
+                else
+                {
+                    _context.Customers.Add(customer);
+                    _context.SaveChangesAsync();
+                }
+
+
+                return CreatedAtAction("GetCustomer", new { id = customer.Cid }, customer);
             }
-            else
+            catch (Exception e)
             {
-                _context.Customers.Add(customer);
-                _context.SaveChangesAsync();
+
+                return Ok(e.Message);
             }
             
-
-            return CreatedAtAction("GetCustomer", new { id = customer.Cid }, customer);
         }
+        #endregion
 
+        #region Delete Customer
         // DELETE: api/Customers/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCustomer(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer == null)
+            try
             {
-                return NotFound();
+                var customer = await _context.Customers.FindAsync(id);
+                if (customer == null)
+                {
+                    return NotFound();
+                }
+
+                _context.Customers.Remove(customer);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
+            catch (Exception e)
+            {
 
-            _context.Customers.Remove(customer);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
         private bool CustomerExists(int id)
         {
@@ -166,18 +366,29 @@ namespace BusReservation.Controllers
         }
 
 
-
+        #region Refund Fare on Cancellation
         [HttpPut]
         [Route("refundFare")]
         public IActionResult RefundFare([FromQuery(Name = "cid")] int Cid, [FromQuery(Name = "fare")] decimal Fare)
         {
-            var cus = _context.Customers.Where(c => c.Cid == Cid).FirstOrDefault();
+            try
+            {
+                var cus = _context.Customers.Where(c => c.Cid == Cid).FirstOrDefault();
 
-            cus.Wallet = cus.Wallet + Fare;
-            _context.SaveChanges();
-            return Ok("Refunded");
+                cus.Wallet = cus.Wallet + Fare;
+                _context.SaveChanges();
+                return Ok("Refunded");
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Login Customer
         [Route("login")]
         [HttpGet]
         public IActionResult checkLogin(string email, string password)
@@ -200,5 +411,6 @@ namespace BusReservation.Controllers
                 return Ok(e.Message);
             }
         }
+        #endregion
     }
 }

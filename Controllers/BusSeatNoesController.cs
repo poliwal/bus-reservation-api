@@ -20,31 +20,54 @@ namespace BusReservation.Controllers
             _context = context;
         }
 
+        #region Get all Seats of all Buses
         // GET: api/BusSeatNoes
         [HttpGet]
         public IActionResult GetBusSeatNos()
         {
-            return Ok((from seat in _context.BusSeatNos
-                       orderby seat.SeatNo
-                       select seat).ToList());
+            try
+            {
+                return Ok((from seat in _context.BusSeatNos
+                           orderby seat.SeatNo
+                           select seat).ToList());
+            }
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+
+        #region Get All Seats for a Bus
         // GET: api/BusSeatNoes/5
         [HttpGet("{id}")]
         public IActionResult GetBusSeatNo(int id)
         {
-            var busSeatNo = _context.BusSeatNos.Where(b => b.BusScId == id).OrderBy(b => b.SeatNo).ToList();
-
-            if (busSeatNo == null)
+            try
             {
-                return NotFound();
+                var busSeatNo = _context.BusSeatNos.Where(b => b.BusScId == id).OrderBy(b => b.SeatNo).ToList();
+
+                if (busSeatNo == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(busSeatNo);
             }
+            catch (Exception e)
+            {
 
-            return Ok(busSeatNo);
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+
+        #region Update a seat of a Bus
         // PUT: api/BusSeatNoes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBusSeatNo(int id, BusSeatNo busSeatNo)
         {
@@ -73,37 +96,58 @@ namespace BusReservation.Controllers
 
             return NoContent();
         }
+        #endregion
 
+        #region Add all seats for a Bus
         // POST: api/BusSeatNoes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public IActionResult PostBusSeatNo(List<BusSeatNo> busSeatNo)
         {
-            foreach (var item in busSeatNo)
+            try
             {
-                _context.BusSeatNos.Add(item);
+                foreach (var item in busSeatNo)
+                {
+                    _context.BusSeatNos.Add(item);
+                }
+
+                _context.SaveChangesAsync();
+
+                return Ok("Added Seats)");
             }
+            catch (Exception e)
+            {
 
-            _context.SaveChangesAsync();
-
-            return Ok("Added Seats)");
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Delete a seat
         // DELETE: api/BusSeatNoes/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBusSeatNo(int id)
         {
-            var busSeatNo = await _context.BusSeatNos.FindAsync(id);
-            if (busSeatNo == null)
+            try
             {
-                return NotFound();
+                var busSeatNo = await _context.BusSeatNos.FindAsync(id);
+                if (busSeatNo == null)
+                {
+                    return NotFound();
+                }
+
+                _context.BusSeatNos.Remove(busSeatNo);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
+            catch (Exception e)
+            {
 
-            _context.BusSeatNos.Remove(busSeatNo);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                return Ok(e.Message);
+            }   
         }
+        #endregion
 
         private bool BusSeatNoExists(int id)
         {

@@ -20,13 +20,25 @@ namespace BusReservation.Controllers
             _context = context;
         }
 
+        #region Get all bookings
         // GET: api/Bookings
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Booking>>> GetBookings()
         {
-            return await _context.Bookings.ToListAsync();
-        }
+            try
+            {
+                return await _context.Bookings.ToListAsync();
+            }
+            catch (Exception e)
+            {
 
+                return Ok(e.Message);
+            }
+            
+        }
+        #endregion
+
+        #region Get booking by BookingId
         // GET: api/Bookings/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Booking>> GetBooking(int id)
@@ -40,31 +52,67 @@ namespace BusReservation.Controllers
 
             return booking;
         }
+        #endregion
 
+        #region Get Booking by Cid
         [HttpGet]
         [Route("bookingForCid")]
         public IActionResult GetBookingForCid(int id)
         {
-            var bookings = (from b in _context.Bookings
-                            join bsc in _context.BusSchedules on b.BusScId equals bsc.BusScId
-                            join bs in _context.Buses on bsc.BusNo equals bs.BusNo
-                            where b.Cid == id
-                            select new
-                            {
-                                b.BookingId,b.Cid,b.BusScId,b.ReturnBusId,b.NoOfPassengers,b.TotalFare,b.Status,b.DateOfBooking,
-                                b.IsReturn,b.ReturnDate,b.WholeBus,b.WithDriver,b.SecurityDeposit,bsc.DepartureDate,
-                                bs.BusNo,bs.BusName,bs.Source,bs.Destination,bs.DepartureTime,bs.ArrivalTime,bs.NoOfSeats,bs.Via,
-                                bs.Fare,bs.DriverName,bs.DriverAge,bs.DriverExperience
-                            }).ToList();
-
-            if (bookings == null)
+            try
             {
-                return NotFound();
+                var bookings = (from b in _context.Bookings
+                                join bsc in _context.BusSchedules on b.BusScId equals bsc.BusScId
+                                join bs in _context.Buses on bsc.BusNo equals bs.BusNo
+                                where b.Cid == id
+                                select new
+                                {
+                                    b.BookingId,
+                                    b.Cid,
+                                    b.BusScId,
+                                    b.ReturnBusId,
+                                    b.NoOfPassengers,
+                                    b.TotalFare,
+                                    b.Status,
+                                    b.DateOfBooking,
+                                    b.IsReturn,
+                                    b.ReturnDate,
+                                    b.WholeBus,
+                                    b.WithDriver,
+                                    b.SecurityDeposit,
+                                    bsc.DepartureDate,
+                                    bsc.AvailableSeats,
+                                    bs.BusNo,
+                                    bs.BusName,
+                                    bs.Source,
+                                    bs.Destination,
+                                    bs.DepartureTime,
+                                    bs.ArrivalTime,
+                                    bs.NoOfSeats,
+                                    bs.Via,
+                                    bs.Fare,
+                                    bs.DriverName,
+                                    bs.DriverAge,
+                                    bs.DriverExperience
+                                }).ToList();
+
+                if (bookings == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(bookings);
             }
+            catch (Exception e)
+            {
 
-            return Ok(bookings);
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Update Booking
         // PUT: api/Bookings/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -95,18 +143,30 @@ namespace BusReservation.Controllers
 
             return NoContent();
         }
+        #endregion
 
+        #region Add Booking
         // POST: api/Bookings
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Booking>> PostBooking(Booking booking)
         {
-            _context.Bookings.Add(booking);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Bookings.Add(booking);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetBooking", new { id = booking.BookingId }, booking);
+                return CreatedAtAction("GetBooking", new { id = booking.BookingId }, booking);
+            }
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Delete Booking
         // DELETE: api/Bookings/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBooking(int id)
@@ -122,6 +182,7 @@ namespace BusReservation.Controllers
 
             return NoContent();
         }
+        #endregion
 
         private bool BookingExists(int id)
         {

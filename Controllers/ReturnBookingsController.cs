@@ -20,29 +20,77 @@ namespace BusReservation.Controllers
             _context = context;
         }
 
+        #region Get all return Bookings
         // GET: api/ReturnBookings
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ReturnBooking>>> GetReturnBookings()
         {
-            return await _context.ReturnBookings.ToListAsync();
-        }
+            try
+            {
+                return await _context.ReturnBookings.ToListAsync();
+            }
+            catch (Exception e)
+            {
 
+                return Ok(e.Message);
+            }
+            
+        }
+        #endregion
+
+        #region Get return booking by ReturnBookingId
         // GET: api/ReturnBookings/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ReturnBooking>> GetReturnBooking(int id)
         {
-            var returnBooking = await _context.ReturnBookings.FindAsync(id);
-
-            if (returnBooking == null)
+            try
             {
-                return NotFound();
+                var returnBooking = await _context.ReturnBookings.FindAsync(id);
+
+                if (returnBooking == null)
+                {
+                    return NotFound();
+                }
+
+                return returnBooking;
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+            
+        }
+        #endregion
+
+        #region Get return booking by BookingId
+        // GET: api/ReturnBookings/5
+        [HttpGet]
+        [Route("byBookingId")]
+        public IActionResult GetReturnBookingByBookingId(int bookingId)
+        {
+            try
+            {
+                var returnBooking = _context.ReturnBookings.Where(rb => rb.BookingId == bookingId).Select(rb => rb.BusScId).FirstOrDefault();
+
+                if (returnBooking == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(returnBooking);
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
             }
 
-            return returnBooking;
         }
+        #endregion
 
+        #region Update a Return Booking
         // PUT: api/ReturnBookings/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutReturnBooking(int id, ReturnBooking returnBooking)
         {
@@ -71,33 +119,52 @@ namespace BusReservation.Controllers
 
             return NoContent();
         }
+        #endregion
 
+        #region Add Return Booking
         // POST: api/ReturnBookings
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<ReturnBooking>> PostReturnBooking(ReturnBooking returnBooking)
         {
-            _context.ReturnBookings.Add(returnBooking);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.ReturnBookings.Add(returnBooking);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetReturnBooking", new { id = returnBooking.ReturnBookingId }, returnBooking);
+                return CreatedAtAction("GetReturnBooking", new { id = returnBooking.ReturnBookingId }, returnBooking);
+            }
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Delete a Return Booking
         // DELETE: api/ReturnBookings/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReturnBooking(int id)
         {
-            var returnBooking = await _context.ReturnBookings.FindAsync(id);
-            if (returnBooking == null)
+            try
             {
-                return NotFound();
+                var returnBooking = await _context.ReturnBookings.FindAsync(id);
+                if (returnBooking == null)
+                {
+                    return NotFound();
+                }
+
+                _context.ReturnBookings.Remove(returnBooking);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-
-            _context.ReturnBookings.Remove(returnBooking);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
         }
+        #endregion
 
         private bool ReturnBookingExists(int id)
         {

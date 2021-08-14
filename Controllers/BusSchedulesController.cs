@@ -20,60 +20,94 @@ namespace BusReservation.Controllers
             _context = context;
         }
 
+        #region Get all Bus Schedules
         // GET: api/BusSchedules
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BusSchedule>>> GetBusSchedules()
         {
-            return await _context.BusSchedules.ToListAsync();
-        }
+            try
+            {
+                return await _context.BusSchedules.ToListAsync();
+            }
+            catch (Exception e)
+            {
 
+                return Ok(e.Message);
+            }
+            
+        }
+        #endregion
+
+        #region Search Buses scheduled
         [HttpGet]
         [Route("searchBuses")]
         public IActionResult SearchBuses([FromQuery(Name = "source")] string Source,
             [FromQuery(Name = "destination")] string Destination, [FromQuery(Name = "date")] string Date)
         {
-            var res = (from bs in _context.BusSchedules
-                       join b in _context.Buses
-                       on bs.BusNo equals b.BusNo
-                       where b.Source == Source && b.Destination == Destination &&
-                       bs.DepartureDate == Convert.ToDateTime(Date)
-                       select new
-                       {
-                           bs.BusScId,
-                           bs.DepartureDate,
-                           b.BusNo,
-                           b.BusName,
-                           b.Source,
-                           b.Destination,
-                           b.DepartureTime,
-                           b.ArrivalTime,
-                           b.NoOfSeats,
-                           b.Via,
-                           b.Fare,
-                           b.DriverName,
-                           b.DriverAge,
-                           b.DriverExperience
-                       }).ToList();
+            try
+            {
+                var res = (from bs in _context.BusSchedules
+                           join b in _context.Buses
+                           on bs.BusNo equals b.BusNo
+                           where b.Source == Source && b.Destination == Destination &&
+                           bs.DepartureDate == Convert.ToDateTime(Date)
+                           select new
+                           {
+                               bs.BusScId,
+                               bs.DepartureDate,
+                               b.BusNo,
+                               b.BusName,
+                               b.Source,
+                               b.Destination,
+                               b.DepartureTime,
+                               b.ArrivalTime,
+                               b.NoOfSeats,
+                               b.Via,
+                               b.Fare,
+                               b.DriverName,
+                               b.DriverAge,
+                               b.DriverExperience
+                           }).ToList();
 
-            return Ok(res);
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Get Bus Schedule by BusScheduleId
         // GET: api/BusSchedules/5
         [HttpGet("{id}")]
         public async Task<ActionResult<BusSchedule>> GetBusSchedule(int id)
         {
-            var busSchedule = await _context.BusSchedules.FindAsync(id);
-
-            if (busSchedule == null)
+            try
             {
-                return NotFound();
+                var busSchedule = await _context.BusSchedules.FindAsync(id);
+
+                if (busSchedule == null)
+                {
+                    return NotFound();
+                }
+
+                return busSchedule;
             }
+            catch (Exception e)
+            {
 
-            return busSchedule;
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+
+        #region Update Bus Schedule
         // PUT: api/BusSchedules/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBusSchedule(int id, BusSchedule busSchedule)
         {
@@ -102,33 +136,57 @@ namespace BusReservation.Controllers
 
             return NoContent();
         }
+        #endregion
 
+
+        #region Add Bus Schedule
         // POST: api/BusSchedules
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<BusSchedule>> PostBusSchedule(BusSchedule busSchedule)
         {
-            _context.BusSchedules.Add(busSchedule);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.BusSchedules.Add(busSchedule);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetBusSchedule", new { id = busSchedule.BusScId }, busSchedule);
+                return CreatedAtAction("GetBusSchedule", new { id = busSchedule.BusScId }, busSchedule);
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+
+        #region Delete Bus Schedule
         // DELETE: api/BusSchedules/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBusSchedule(int id)
         {
-            var busSchedule = await _context.BusSchedules.FindAsync(id);
-            if (busSchedule == null)
+            try
             {
-                return NotFound();
+                var busSchedule = await _context.BusSchedules.FindAsync(id);
+                if (busSchedule == null)
+                {
+                    return NotFound();
+                }
+
+                _context.BusSchedules.Remove(busSchedule);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-
-            _context.BusSchedules.Remove(busSchedule);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
         private bool BusScheduleExists(int id)
         {

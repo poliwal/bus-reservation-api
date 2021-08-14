@@ -20,29 +20,50 @@ namespace BusReservation.Controllers
             _context = context;
         }
 
+        #region Get all Passengers
         // GET: api/PassengerDetails
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PassengerDetail>>> GetPassengerDetails()
         {
-            return await _context.PassengerDetails.ToListAsync();
-        }
+            try
+            {
+                return await _context.PassengerDetails.ToListAsync();
+            }
+            catch (Exception e)
+            {
 
+                return Ok(e.Message);
+            }
+            
+        }
+        #endregion
+
+        #region Get Passenger by PassengerId
         // GET: api/PassengerDetails/5
         [HttpGet("{id}")]
         public async Task<ActionResult<PassengerDetail>> GetPassengerDetail(int id)
         {
-            var passengerDetail = await _context.PassengerDetails.FindAsync(id);
-
-            if (passengerDetail == null)
+            try
             {
-                return NotFound();
+                var passengerDetail = await _context.PassengerDetails.FindAsync(id);
+
+                if (passengerDetail == null)
+                {
+                    return NotFound();
+                }
+
+                return passengerDetail;
             }
-
-            return passengerDetail;
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Update a passenger's details
         // PUT: api/PassengerDetails/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPassengerDetail(int id, PassengerDetail passengerDetail)
         {
@@ -71,38 +92,58 @@ namespace BusReservation.Controllers
 
             return NoContent();
         }
+        #endregion
 
+
+        #region Add Passengers list
         // POST: api/PassengerDetails
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<PassengerDetail>> PostPassengerDetail(List<PassengerDetail> passengerDetail)
         {
-            foreach (var item in passengerDetail)
+            try
             {
-                _context.PassengerDetails.Add(item);
+                foreach (var item in passengerDetail)
+                {
+                    _context.PassengerDetails.Add(item);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("GetPassengerDetail", new { id = passengerDetail }, passengerDetail);
             }
-
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
             
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetPassengerDetail", new { id = passengerDetail }, passengerDetail);
         }
+        #endregion
 
+        #region Delete a Passenger
         // DELETE: api/PassengerDetails/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePassengerDetail(int id)
         {
-            var passengerDetail = await _context.PassengerDetails.FindAsync(id);
-            if (passengerDetail == null)
+            try
             {
-                return NotFound();
+                var passengerDetail = await _context.PassengerDetails.FindAsync(id);
+                if (passengerDetail == null)
+                {
+                    return NotFound();
+                }
+
+                _context.PassengerDetails.Remove(passengerDetail);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-
-            _context.PassengerDetails.Remove(passengerDetail);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
         private bool PassengerDetailExists(int id)
         {
@@ -111,45 +152,70 @@ namespace BusReservation.Controllers
 
 
 
-        //get passenger by booking id
-
+        #region Get passenger by bookingId
         [HttpGet]
         [Route("getPassenger")]
         public IActionResult GetPassenger([FromQuery(Name = "bookingid")] int bookingid)
         {
-            dynamic passenger = (from p in _context.PassengerDetails
-                                 where p.BookingId == bookingid
-                                 select p).ToList();
+            try
+            {
+                dynamic passenger = (from p in _context.PassengerDetails
+                                     where p.BookingId == bookingid
+                                     select p).ToList();
 
-            return Ok(passenger);
+                return Ok(passenger);
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
-        //get passengerseatno by bookingid
-
+        #region Get passenger's seatno by bookingId
         [HttpGet]
         [Route("getPassengerSeatNo")]
         public IActionResult GetPassengerSeatNo([FromQuery(Name = "bookingid")] int bookingid)
         {
-            dynamic seatno = (from p in _context.PassengerDetails
-                              where p.BookingId == bookingid
-                              select p.SeatNo).ToList();
+            try
+            {
+                dynamic seatno = (from p in _context.PassengerDetails
+                                  where p.BookingId == bookingid
+                                  select p.SeatNo).ToList();
 
-            return Ok(seatno);
+                return Ok(seatno);
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
 
 
-        //get passenger return seat no
-
-
+        #region Get passenger's return seat no
         [HttpGet]
         [Route("getPassengerReturnSeatNo")]
         public IActionResult GetPassengerReturnSeatNo([FromQuery(Name = "bookingid")] int bookingid)
         {
-            dynamic returnSeatNo = (from p in _context.PassengerDetails
-                                    where p.BookingId == bookingid
-                                    select p.ReturnSeatNo).ToList();
-            return Ok(returnSeatNo);
+            try
+            {
+                dynamic returnSeatNo = (from p in _context.PassengerDetails
+                                        where p.BookingId == bookingid
+                                        select p.ReturnSeatNo).ToList();
+                return Ok(returnSeatNo);
+            }
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
     }
 }

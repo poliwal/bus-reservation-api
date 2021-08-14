@@ -80,6 +80,8 @@ namespace BusReservation.Models
                 entity.HasKey(e => e.BusScId)
                     .HasName("PK__BusSched__D183A887C7A7EA5D");
 
+                entity.Property(e => e.AvailableSeats).HasDefaultValueSql("((24))");
+
                 entity.Property(e => e.DepartureDate).HasColumnType("date");
 
                 entity.HasOne(d => d.BusNoNavigation)
@@ -107,6 +109,9 @@ namespace BusReservation.Models
             {
                 entity.HasKey(e => e.Cid)
                     .HasName("PK__Customer__C1FFD861393517FE");
+
+                entity.HasIndex(e => e.Email, "custEmail_unique")
+                    .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
 

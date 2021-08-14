@@ -20,27 +20,49 @@ namespace BusReservation.Controllers
             _context = context;
         }
 
+        #region Get All Buses
         // GET: api/buses
         [HttpGet]
         public async Task<ActionResult<IEnumerable<bus>>> GetBuses()
         {
-            return await _context.Buses.ToListAsync();
+            try
+            {
+                return await _context.Buses.ToListAsync();
+            }
+            catch (Exception e)
+            {
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Get Bus by BusNo
         // GET: api/buses/5
         [HttpGet("{id}")]
         public async Task<ActionResult<bus>> Getbus(int id)
         {
-            var bus = await _context.Buses.FindAsync(id);
-
-            if (bus == null)
+            try
             {
-                return NotFound();
+                var bus = await _context.Buses.FindAsync(id);
+
+                if (bus == null)
+                {
+                    return NotFound();
+                }
+
+                return bus;
             }
+            catch (Exception e)
+            {
 
-            return bus;
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        /*#region Reduce seats
         [HttpPut]
         [Route("reduceSeats")]
         public IActionResult ReduceSeats([FromQuery(Name = "busNo")] int BusNo,[FromQuery(Name = "num")] int Num)
@@ -50,7 +72,7 @@ namespace BusReservation.Controllers
 
             bus.NoOfSeats = bus.NoOfSeats - Num;
 
-            /*_context.Buses.Update(bus);*/
+            *//*_context.Buses.Update(bus);*//*
 
             _context.SaveChanges();
 
@@ -61,7 +83,10 @@ namespace BusReservation.Controllers
 
             return Ok("Updated Seats");
         }
+        #endregion*/
 
+
+        #region Update Bus
         // PUT: api/buses/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -92,33 +117,56 @@ namespace BusReservation.Controllers
 
             return NoContent();
         }
+        #endregion
 
+
+        #region Add Bus
         // POST: api/buses
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<bus>> Postbus(bus bus)
         {
-            _context.Buses.Add(bus);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Buses.Add(bus);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("Getbus", new { id = bus.BusNo }, bus);
+                return CreatedAtAction("Getbus", new { id = bus.BusNo }, bus);
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion
 
+        #region Delete Bus
         // DELETE: api/buses/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Deletebus(int id)
         {
-            var bus = await _context.Buses.FindAsync(id);
-            if (bus == null)
+            try
             {
-                return NotFound();
+                var bus = await _context.Buses.FindAsync(id);
+                if (bus == null)
+                {
+                    return NotFound();
+                }
+
+                _context.Buses.Remove(bus);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
+            catch (Exception e)
+            {
 
-            _context.Buses.Remove(bus);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                return Ok(e.Message);
+            }
+            
         }
+        #endregion  
 
         private bool busExists(int id)
         {
