@@ -71,7 +71,12 @@ namespace BusReservation.Controllers
         {
             try
             {
-                var returnBooking = _context.ReturnBookings.Where(rb => rb.BookingId == bookingId).Select(rb => rb.BusScId).FirstOrDefault();
+                var returnBooking = (from rb in _context.ReturnBookings
+                                     join bs in _context.BusSchedules
+                                     on rb.BusScId equals bs.BusScId
+                                     where rb.BookingId == bookingId
+                                     select new { rb.ReturnBookingId,rb.BusScId, bs.BusNo, bs.DepartureDate }).FirstOrDefault();
+                /*var returnBooking = _context.ReturnBookings.Where(rb => rb.BookingId == bookingId).FirstOrDefault();*/
 
                 if (returnBooking == null)
                 {

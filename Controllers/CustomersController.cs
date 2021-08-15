@@ -158,7 +158,7 @@ namespace BusReservation.Controllers
             try
             {
                 var cust = _context.Customers.Where(a => a.Cid == Cid).FirstOrDefault();
-                if (cust.Password != cp) return BadRequest("wrong Current Password.");
+                if (cust.Password != EncryptPassword(cp)) return BadRequest("wrong Current Password.");
 
                 if (np != cnp)
                 {
@@ -166,7 +166,7 @@ namespace BusReservation.Controllers
                 }
 
                 // update details if same
-                cust.Password = cnp;
+                cust.Password = EncryptPassword(cnp);
 
                 _context.SaveChanges();
                 return Ok("Password changed successfully.");
@@ -195,7 +195,7 @@ namespace BusReservation.Controllers
                 }
 
                 // update details if same
-                cust.Password = cnp;
+                cust.Password = EncryptPassword(cnp);
 
                 _context.SaveChanges();
                 return Ok("Password changed successfully.");
@@ -236,7 +236,7 @@ namespace BusReservation.Controllers
                         }
                         unauthCust.Fname = customer.Fname;
                         unauthCust.Lname = customer.Lname;
-                        unauthCust.Password = customer.Password;
+                        unauthCust.Password = EncryptPassword(customer.Password);
                         unauthCust.ContactNo = customer.ContactNo;
                         unauthCust.Wallet = customer.Wallet;
                         unauthCust.IsAuthorized = customer.IsAuthorized;
@@ -250,6 +250,8 @@ namespace BusReservation.Controllers
                         {
                             return Ok("Both passwords didn't matched.");
                         }
+
+                        customer.Password = EncryptPassword(customer.Password);
 
                         // update details if same
                         _context.Customers.Add(customer);
@@ -395,14 +397,14 @@ namespace BusReservation.Controllers
         {
             try
             {
-                var result = _context.Customers.Where(x => x.Email == email && x.Password==password).FirstOrDefault();
+                var result = _context.Customers.Where(x => x.Email == email && x.Password== EncryptPassword(password)).FirstOrDefault();
                 if (result != null)
                 {
                     return Ok(result);
                 }
                 else
                 {
-                    return Ok("Invalid");
+                    return NotFound("Invalid");
                 }
             }
             catch (Exception e)
@@ -410,6 +412,29 @@ namespace BusReservation.Controllers
                 /*Console.Write(e);*/
                 return Ok(e.Message);
             }
+        }
+        #endregion
+
+        #region Password Encryption
+        private string EncryptPassword(string password)
+        {
+            byte[] encData_byte = new byte[password.Length];
+            encData_byte = System.Text.Encoding.UTF8.GetBytes(password);
+            string encryptedPassword = Convert.ToBase64String(encData_byte);
+            return encryptedPassword;
+        }
+        #endregion
+
+        #region Password Decryption
+        private string DecryptPassword(string encryptedPassword)
+        {
+            System.Text.UTF8Encoding encoder = new System.Text.UTF8Encoding();
+            System.Text.Decoder utf8Decoder = encoder.GetDecoder();
+            byte[] todecode_byte = Convert.FromBase64String(encryptedPassword);
+            int charCount = utf8Decoder.GetCharCount(todecode_byte, 0, todecode_byte.Length);
+            char[] decoded_char = new char[charCount];
+            string decryptedPassword = new string(decoded_char);
+            return decryptedPassword;
         }
         #endregion
     }
