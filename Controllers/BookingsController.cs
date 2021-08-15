@@ -154,7 +154,15 @@ namespace BusReservation.Controllers
             try
             {
                 var cust = _context.Customers.Where(c => c.Cid == booking.Cid).FirstOrDefault();
-                cust.HasBooked = true;
+                if(cust != null)
+                {
+                    if (cust.IsAuthorized == true)
+                    {
+                        cust.HasBooked = true;
+                    }
+                }
+                
+                
                 _context.Bookings.Add(booking);
                 await _context.SaveChangesAsync();
 

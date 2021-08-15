@@ -311,7 +311,7 @@ namespace BusReservation.Controllers
         {
             try
             {
-                var res = _context.Customers.Where(c => c.Email == customer.Email && c.ContactNo == customer.ContactNo).FirstOrDefault();
+                var res = _context.Customers.Where(c => c.Email == customer.Email).FirstOrDefault();
 
                 if (res != null)
                 {

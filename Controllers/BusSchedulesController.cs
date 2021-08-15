@@ -38,6 +38,30 @@ namespace BusReservation.Controllers
         }
         #endregion
 
+        #region Get Fare of Return Bus
+        [HttpGet]
+        [Route("getFareOfReturnBus")]
+        public IActionResult GetFareOfReturnBus(int Id)
+        {
+            try
+            {
+                var res = (from bs in _context.BusSchedules
+                           join b in _context.Buses
+                           on bs.BusNo equals b.BusNo
+                           where bs.BusScId == Id
+                           select b.Fare).FirstOrDefault();
+
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+
+                return Ok(e.Message);
+            }
+
+        }
+        #endregion
+
         #region Search Buses scheduled
         [HttpGet]
         [Route("searchBuses")]
@@ -55,6 +79,7 @@ namespace BusReservation.Controllers
                            {
                                bs.BusScId,
                                bs.DepartureDate,
+                               bs.AvailableSeats,
                                b.BusNo,
                                b.BusName,
                                b.Source,
@@ -79,6 +104,71 @@ namespace BusReservation.Controllers
             
         }
         #endregion
+
+
+        #region Reduce seats
+        [HttpPut]
+        [Route("reduceSeats")]
+        public IActionResult ReduceSeats([FromQuery(Name = "busScId")] int BusScId, [FromQuery(Name = "num")] int Num)
+        {
+            try
+            {
+                var busSc = _context.BusSchedules.Where(b => b.BusScId == BusScId).FirstOrDefault();
+
+                busSc.AvailableSeats = busSc.AvailableSeats - Num;
+
+                _context.BusSchedules.Update(busSc);
+
+                _context.SaveChanges();
+
+                if (busSc == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok("Updated Seats");
+            }
+            catch (Exception e)
+            {
+
+                return NotFound(e.Message);
+            }
+            
+        }
+        #endregion
+
+
+        #region Add seats
+        [HttpPut]
+        [Route("addSeats")]
+        public IActionResult AddSeats([FromQuery(Name = "busScId")] int BusScId, [FromQuery(Name = "num")] int Num)
+        {
+            try
+            {
+                var busSc = _context.BusSchedules.Where(b => b.BusScId == BusScId).FirstOrDefault();
+
+                busSc.AvailableSeats = busSc.AvailableSeats + Num;
+
+                _context.BusSchedules.Update(busSc);
+
+                _context.SaveChanges();
+
+                if (busSc == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok("Updated Seats");
+            }
+            catch (Exception e)
+            {
+
+                return NotFound(e.Message);
+            }
+
+        }
+        #endregion
+
 
         #region Get Bus Schedule by BusScheduleId
         // GET: api/BusSchedules/5
