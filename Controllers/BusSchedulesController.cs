@@ -45,6 +45,7 @@ namespace BusReservation.Controllers
         {
             try
             {
+
                 var res = (from bs in _context.BusSchedules
                            join b in _context.Buses
                            on bs.BusNo equals b.BusNo

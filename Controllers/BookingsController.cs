@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusReservation.Models;
+using System.Net.Mail;
+using System.Net;
 
 namespace BusReservation.Controllers
 {
@@ -192,6 +194,139 @@ namespace BusReservation.Controllers
 
             return NoContent();
         }
+        #endregion
+
+        #region Send E-Ticket SMTP
+        [HttpGet]
+        [Route("sendTicket")]
+        public IActionResult SendTicket([FromQuery(Name = "cid")] int Cid, [FromQuery(Name = "bookingId")] int BookingId,
+            [FromQuery(Name = "busNo")] int BusNo, [FromQuery(Name = "source")] string Source, [FromQuery(Name = "dest")] string Destination,
+            [FromQuery(Name = "date")] string Date)
+        {
+            var cust = _context.Customers.Where(c => c.Cid == Cid).FirstOrDefault();
+            if (cust == null)
+            {
+                return BadRequest("invalid email");
+            }
+
+            using SmtpClient email = new SmtpClient
+            {
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                EnableSsl = true,
+                Host = "smtp.gmail.com",
+                Port = 587,
+                Credentials = new NetworkCredential("ltibusreservation@gmail.com", "Mihir@123"),
+            };
+
+            string subject = "Bus Reservation E-Ticket";
+
+            string body = "Ticket No: "+BookingId+"\nBus No: "+BusNo+"\nSource: "+Source+"\nDestination: "+Destination+"\nDeparture Date: "+Date;
+            if (cust.IsAuthorized == false)
+            {
+                body = body + "\nNote: Register with us to cancel or to view more details of your ticket.";
+            }
+            try
+            {
+                email.Send("ltibusreservation@gmail.com", cust.Email, subject, body);
+                return Ok("Email sent");
+            }
+            catch (Exception e)
+            {
+                return BadRequest("Email not sent");
+            }
+        }
+        #endregion
+
+        #region Get Last Month Records and Profits
+        [HttpGet]
+        [Route("lastMonthRecordAndProfits")]
+        public IActionResult LastMonthRecordAndProfits(string lastMonthDate, string currentDate)
+        {
+            try
+            {
+                var record = _context.Bookings.Where(x => x.DateOfBooking >= Convert.ToDateTime(lastMonthDate) &&
+             x.DateOfBooking < Convert.ToDateTime(currentDate)).ToList();
+
+                return Ok(record);
+            }
+            catch (Exception e)
+            {
+                return NotFound(e.Message);
+            }
+        }
+        #endregion
+
+        #region Get Customer Reservation Details
+        #region Get today's Reservation Details 
+        [HttpGet]
+        [Route("getCustomerReservationDetailsOfToday")]
+        public IActionResult GetCustomerReservationDetails(string currentDate)
+        {
+            try
+            {
+                var res = (from bk in _context.Bookings
+                           join c in _context.Customers
+                           on bk.Cid equals c.Cid
+                           where bk.DateOfBooking == Convert.ToDateTime(currentDate)
+                           select bk).ToList();
+
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+
+                return NotFound(e.Message);
+            }
+        }
+        #endregion
+
+        #region Get Weekly Reservation Details 
+        [HttpGet]
+        [Route("getCustomerReservationDetailsOfWeek")]
+        public IActionResult GetCustomerReservationDetailsOfWeek(string weekDate, string currentDate)
+        {
+            try
+            {
+                var res = (from bk in _context.Bookings
+                           join c in _context.Customers
+                           on bk.Cid equals c.Cid
+                           where bk.DateOfBooking >= Convert.ToDateTime(weekDate) && bk.DateOfBooking <= Convert.ToDateTime(currentDate)
+                           select bk).ToList();
+
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+
+                return NotFound(e.Message);
+            }
+        }
+        #endregion
+
+        #region Get Monthly Reservation Details 
+        [HttpGet]
+        [Route("getCustomerReservationDetailsOfMonth")]
+        public IActionResult GetCustomerReservationDetailsOfMonth(string monthDate, string currentDate)
+        {
+
+            try
+            {
+                var res = (from bk in _context.Bookings
+                           join c in _context.Customers
+                           on bk.Cid equals c.Cid
+                           where bk.DateOfBooking >= Convert.ToDateTime(monthDate) && bk.DateOfBooking <= Convert.ToDateTime(currentDate)
+                           select bk).ToList();
+
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+
+                return NotFound(e.Message);
+            }
+        }
+        #endregion
         #endregion
 
         private bool BookingExists(int id)

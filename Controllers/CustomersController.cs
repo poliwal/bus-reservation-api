@@ -132,7 +132,7 @@ namespace BusReservation.Controllers
                 EnableSsl = true,
                 Host = "smtp.gmail.com",
                 Port = 587,
-                Credentials = new NetworkCredential("jesselannister3@gmail.com", ""),
+                Credentials = new NetworkCredential("ltibusreservation@gmail.com", "Mihir@123"),
             };
 
             string subject = "Reset your Password";
@@ -140,13 +140,35 @@ namespace BusReservation.Controllers
             string body = "Reset Password Link :  http://localhost:4200/reset-password ";
             try
             {
-                email.Send("jesselannister3@gmail.com", Email, subject, body);
+                email.Send("ltibusreservation@gmail.com", Email, subject, body);
                 return Ok("Email sent");
             }
             catch (Exception e)
             {
                 return BadRequest("Email not sent");
             }
+        }
+        #endregion
+
+        #region Get Customers with no Reservation
+        [HttpGet]
+        [Route("getCustomersWithNoReservation")]
+        public IActionResult GetCustomersWithNoReservation()
+        {
+            try
+            {
+                var customers = (from c in _context.Customers
+                                 where c.HasBooked == false
+                                 select c).ToList();
+
+                return Ok(customers);
+            }
+            catch (Exception e)
+            {
+
+                return NotFound(e.Message);
+            }
+
         }
         #endregion
 
@@ -320,7 +342,7 @@ namespace BusReservation.Controllers
                 else
                 {
                     _context.Customers.Add(customer);
-                    _context.SaveChangesAsync();
+                    _context.SaveChanges();
                 }
 
 

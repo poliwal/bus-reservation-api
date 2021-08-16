@@ -62,8 +62,32 @@ namespace BusReservation.Controllers
         }
         #endregion
 
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        #region Get Frequently Travelled Routes
+        [HttpGet]
+        [Route("getFrequentlyTravelledRoutes")]
+        public IActionResult GetFrequentlyTravelledRoutes()
+        {
+            try
+            {
+                var route = (from b in _context.Buses
+                             select new
+                             {
+                                 b.Via,
+                                 frequency = b.Via.Count()
+                             }).ToList();
 
+                return Ok(route);
+            }
+            catch (Exception e)
+            {
+                return NotFound(e.Message);
+            }
+        }
+        #endregion
 
         #region Update Bus
         // PUT: api/buses/5
