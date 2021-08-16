@@ -216,7 +216,7 @@ namespace BusReservation.Controllers
                 EnableSsl = true,
                 Host = "smtp.gmail.com",
                 Port = 587,
-                Credentials = new NetworkCredential("ltibusreservation@gmail.com", "Mihir@123"),
+                Credentials = new NetworkCredential("ltibusreservation@gmail.com", ""),
             };
 
             string subject = "Bus Reservation E-Ticket";
