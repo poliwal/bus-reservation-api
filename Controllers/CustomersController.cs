@@ -277,6 +277,7 @@ namespace BusReservation.Controllers
 
                         // update details if same
                         _context.Customers.Add(customer);
+                        customer.HasBooked = false;
 
                         _context.SaveChanges();
                         return Ok("Added Customer.");
