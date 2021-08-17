@@ -62,10 +62,48 @@ namespace BusReservation.Controllers
         }
         #endregion
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        #region Get Sources
+        [HttpGet]
+        [Route("getSources")]
+        public IActionResult GetSources()
+        {
+            try
+            {
+                var sources = _context.Buses.Select(b => b.Source).Distinct();
+                /*var sources = (from b in _context.Buses
+                             select b.Source
+                             ).ToList();*/
+
+                return Ok(sources);
+            }
+            catch (Exception e)
+            {
+                return NotFound(e.Message);
+            }
+        }
+        #endregion
+
+        #region Get Destination
+        [HttpGet]
+        [Route("getDestination")]
+        public IActionResult GetDestination()
+        {
+            try
+            {
+                var dest = _context.Buses.Select(b => b.Destination).Distinct();
+                /*var dest = (from b in _context.Buses
+                               select b.Destination
+                               ).ToList();*/
+
+                return Ok(dest);
+            }
+            catch (Exception e)
+            {
+                return NotFound(e.Message);
+            }
+        }
+        #endregion
+
         #region Get Frequently Travelled Routes
         [HttpGet]
         [Route("getFrequentlyTravelledRoutes")]
